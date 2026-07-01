@@ -1,0 +1,30 @@
+# Gradle
+.gradle/
+build/
+
+# IntelliJ IDEA project files
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Plugin sandbox (created by runIde)
+.intellijPlatform/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kotlin / JVM
+.kotlin/
+*.class
+*.jar
+*.war
+
+# Keep the Gradle wrapper jar (required to build on a fresh checkout / CI).
+# This negation must come AFTER *.jar above, otherwise *.jar re-ignores it.
+!gradle/wrapper/gradle-wrapper.jar
+
+# Claude Code local settings
+.claude/settings.local.json

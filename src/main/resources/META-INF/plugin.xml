@@ -1,0 +1,62 @@
+<idea-plugin>
+    <id>eu.hannaweb.fnm</id>
+    <name>FNM Version Switcher</name>
+
+    <!--
+        Required: IntelliJ Platform (base), Git4Idea (branch detection),
+        JavaScript (Node.js interpreter API — available in WebStorm and IDEA Ultimate).
+    -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>Git4Idea</depends>
+    <depends>JavaScript</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+
+        <!-- Application-level service: fnm binary detection, install, list -->
+        <applicationService
+            serviceImplementation="eu.hannaweb.fnm.services.FnmAppService"/>
+
+        <!-- Project-level service: version file detection, interpreter switching -->
+        <projectService
+            serviceImplementation="eu.hannaweb.fnm.services.FnmProjectService"/>
+
+        <!-- Project-level persistent settings (.idea/fnm.xml) -->
+        <projectService
+            serviceImplementation="eu.hannaweb.fnm.settings.FnmSettings"/>
+
+        <!-- Settings panel under Settings → Tools → FNM Version Switcher -->
+        <projectConfigurable
+            parentId="tools"
+            instance="eu.hannaweb.fnm.settings.FnmSettingsConfigurable"
+            id="eu.hannaweb.fnm.settings"
+            displayName="FNM Version Switcher"/>
+
+        <!-- Status bar widget showing the active Node version -->
+        <statusBarWidgetFactory
+            implementation="eu.hannaweb.fnm.ui.FnmStatusBarWidgetFactory"
+            id="FnmStatusBarWidget"
+            order="first"/>
+
+        <!-- Notification group for all plugin messages -->
+        <notificationGroup
+            id="eu.hannaweb.fnm"
+            displayType="BALLOON"/>
+
+        <!-- Trigger version check on project open -->
+        <postStartupActivity
+            implementation="eu.hannaweb.fnm.listeners.FnmStartupActivity"/>
+
+    </extensions>
+
+    <projectListeners>
+        <!-- Detect Git branch changes -->
+        <listener
+            class="eu.hannaweb.fnm.listeners.FnmBranchListener"
+            topic="git4idea.repo.GitRepositoryChangeListener"/>
+        <!-- Detect .node-version / .nvmrc file saves -->
+        <listener
+            class="eu.hannaweb.fnm.listeners.FnmFileListener"
+            topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+    </projectListeners>
+
+</idea-plugin>
