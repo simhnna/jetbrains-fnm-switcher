@@ -3,6 +3,7 @@ package eu.hannaweb.fnm.settings
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.TextBrowseFolderListener
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import eu.hannaweb.fnm.services.FnmProjectService
 import java.awt.GridBagConstraints
@@ -31,20 +32,24 @@ class FnmSettingsConfigurable(private val project: Project) : Configurable {
 
         fnmPathField = TextFieldWithBrowseButton().apply {
             addBrowseFolderListener(
-                "Select fnm Binary",
-                "Choose the full path to the fnm executable",
-                project,
-                FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()
+                TextBrowseFolderListener(
+                    FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()
+                        .withTitle("Select fnm Binary")
+                        .withDescription("Choose the full path to the fnm executable"),
+                    project
+                )
             )
             text = s.fnmBinaryPath
         }
 
         fnmDirField = TextFieldWithBrowseButton().apply {
             addBrowseFolderListener(
-                "Select FNM_DIR",
-                "Choose the directory where fnm stores Node.js versions (\$FNM_DIR)",
-                project,
-                FileChooserDescriptorFactory.createSingleFolderDescriptor()
+                TextBrowseFolderListener(
+                    FileChooserDescriptorFactory.createSingleFolderDescriptor()
+                        .withTitle("Select FNM_DIR")
+                        .withDescription("Choose the directory where fnm stores Node.js versions (\$FNM_DIR)"),
+                    project
+                )
             )
             text = s.fnmDir
         }

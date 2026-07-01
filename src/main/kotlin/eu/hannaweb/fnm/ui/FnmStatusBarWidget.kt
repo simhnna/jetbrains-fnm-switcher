@@ -27,6 +27,7 @@ import eu.hannaweb.fnm.services.FnmProjectService
 import java.awt.Cursor
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -151,7 +152,7 @@ class FnmStatusBarWidget(private val project: Project) :
 
     private fun computeState(): WidgetState {
         val service = FnmProjectService.getInstance(project)
-        val active = ReadAction.compute<String?, RuntimeException> { safeGetCurrentVersion() }
+        val active = ReadAction.nonBlocking(Callable { safeGetCurrentVersion() }).executeSynchronously()
         val required = service.detectRequiredVersion()
         val versionFiles = service.findAllVersionFiles()
 
@@ -200,7 +201,7 @@ class FnmStatusBarWidget(private val project: Project) :
                 if (fnmDir != null) service.listInstalled(fnmDir) else emptyList()
             }
             val currentVersion = timed(timings, "currentVersion") {
-                ReadAction.compute<String?, RuntimeException> { safeGetCurrentVersion() }
+                ReadAction.nonBlocking(Callable { safeGetCurrentVersion() }).executeSynchronously()
             }
             LOG.info(
                 "FNM: popup data gathered in ${timings.values.sum()}ms total " +

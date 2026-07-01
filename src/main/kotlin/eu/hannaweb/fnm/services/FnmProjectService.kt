@@ -21,6 +21,7 @@ import eu.hannaweb.fnm.notifications.FnmNotifications
 import eu.hannaweb.fnm.settings.FnmSettings
 import eu.hannaweb.fnm.ui.FnmStatusBarWidget
 import java.io.File
+import java.util.concurrent.Callable
 
 /**
  * Project-level service that orchestrates Node version detection and switching.
@@ -170,9 +171,9 @@ class FnmProjectService(private val project: Project) {
             .replace('\\', '/').trimEnd('/')
 
         val result = try {
-            ReadAction.compute<LinkedHashMap<String, String>, RuntimeException> {
+            ReadAction.nonBlocking(Callable {
                 val map = LinkedHashMap<String, String>()
-                if (project.isDisposed) return@compute map
+                if (project.isDisposed) return@Callable map
                 val scope = GlobalSearchScope.projectScope(project)
                 for (fileName in VERSION_FILES) {
                     FilenameIndex.getVirtualFilesByName(fileName, scope).forEach { file ->
@@ -195,7 +196,7 @@ class FnmProjectService(private val project: Project) {
                     }
                 }
                 map
-            }
+            }).executeSynchronously()
         } catch (e: IndexNotReadyException) {
             // Index not yet built (startup indexing in progress). Return an uncached empty
             // map so the caller can show a partial result now; FnmStatusBarWidget schedules
@@ -270,6 +271,14 @@ class FnmProjectService(private val project: Project) {
             // Auto-install runs `fnm install` (a subprocess that downloads & executes) on
             // project open with no user action. Only do that silently in trusted projects;
             // otherwise require an explicit click via the install prompt.
+            // NOTE: project.isTrusted() is deprecated in favor of
+            // TrustedProjects.isProjectTrusted(TrustedProjectsLocator.locateProject(project)),
+            // but that API is @ApiStatus.Internal in 2024.2, so we keep the deprecated (public)
+            // extension until a stable public replacement exists. Replacement, for reference:
+            //   TrustedProjects.isProjectTrusted(TrustedProjectsLocator.locateProject(project))
+            //   (imports: com.intellij.ide.trustedProjects.TrustedProjects,
+            //             com.intellij.ide.trustedProjects.TrustedProjectsLocator)
+            @Suppress("DEPRECATION")
             if (settings.state.autoInstall && project.isTrusted()) {
                 installThenSwitch(required, fnmPath, fnmDir, target)
             } else {
