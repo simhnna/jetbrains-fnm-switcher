@@ -66,7 +66,7 @@ intellijPlatform {
 
         vendor {
             name = "Simon Hanna"
-            email = "simhnna@gmail.com"
+            email = "jetbrains@hannaweb.eu"
             url = "https://github.com/simhnna/jetbrains-fnm-switcher"
         }
     }
